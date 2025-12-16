@@ -13,8 +13,14 @@ AFRAME.registerComponent('collector-game', {
     this.nose = document.querySelector('#nose');
     this.hudScore = document.getElementById('score');
     var startBtn = document.getElementById('start');
+    var startScreen = document.getElementById('start-screen');
     startBtn.addEventListener('click', () => {
-      startBtn.style.display = 'none';
+      if (startScreen) {
+        startScreen.style.opacity = '0';
+        setTimeout(() => { startScreen.style.display = 'none'; }, 500);
+      } else {
+        startBtn.style.display = 'none';
+      }
       this.reset();
       this.startGame();
     });
