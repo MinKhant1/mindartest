@@ -198,6 +198,9 @@ AFRAME.registerComponent('collector-game', {
         this.spawnPop(tp);
         this.score += 1;
         this.hudScore.textContent = String(this.score);
+        if (this.score > 0 && this.score % 5 === 0) {
+          this.showConfetti();
+        }
         var distance = tp.clone().sub(cam.position).length();
         var outDir2 = new THREE.Vector2(targetNDC.x, targetNDC.y);
         if (outDir2.length() < 0.001) outDir2.set(0, 1);
@@ -259,6 +262,37 @@ AFRAME.registerComponent('collector-game', {
         if (this.pops[n]) compact.push(this.pops[n]);
       }
       this.pops = compact;
+    }
+  },
+  showConfetti: function () {
+    var cont = document.getElementById('confetti');
+    if (!cont) return;
+    this.spawnSideConfetti(cont, 'left', 28);
+    this.spawnSideConfetti(cont, 'right', 28);
+  },
+  spawnSideConfetti: function (cont, side, count) {
+    var colors = ['#ff3b3b', '#ffd54f', '#66ff66', '#4fc3f7', '#ab47bc', '#ff8a65', '#ffee58', '#8bc34a'];
+    for (var i = 0; i < count; i++) {
+      var piece = document.createElement('div');
+      piece.className = side === 'left' ? 'confetti-piece confetti-piece-left' : 'confetti-piece confetti-piece-right';
+      var y = Math.floor(this.rand(60, 85));
+      var rot = Math.floor(this.rand(0, 360)) + 'deg';
+      var c = colors[Math.floor(this.rand(0, colors.length))];
+      var size = this.rand(24, 36);
+      piece.style.backgroundColor = c;
+      piece.style.width = size + 'px';
+      piece.style.height = size + 'px';
+      piece.style.borderRadius = Math.random() < 0.4 ? '50%' : '6px';
+      piece.style.setProperty('--y', y + '%');
+      piece.style.setProperty('--rot', rot);
+      piece.style.animationDuration = (0.8 + Math.random() * 0.9) + 's';
+      piece.style.animationDelay = (Math.random() * 0.15) + 's';
+      cont.appendChild(piece);
+      (function(el) {
+        setTimeout(function () {
+          if (el && el.parentNode) el.parentNode.removeChild(el);
+        }, 1600);
+      })(piece);
     }
   }
 });

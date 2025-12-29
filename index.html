@@ -6,6 +6,9 @@
   <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-face-aframe.prod.js"></script>
   <style>
+    :root {
+      --header-h: 80px;
+    }
     html,
     body {
       margin: 0;
@@ -158,6 +161,61 @@
       text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
     }
 
+    #confetti {
+      position: absolute;
+      top: var(--header-h);
+      left: 0;
+      width: 100%;
+      height: calc(100% - var(--header-h));
+      pointer-events: none;
+      z-index: 2000;
+      overflow: hidden;
+    }
+    .confetti-piece {
+      position: absolute;
+      width: 24px;
+      height: 24px;
+      animation-timing-function: ease-out;
+      animation-fill-mode: forwards;
+    }
+    .confetti-piece-left { animation-name: confetti-left-up; }
+    .confetti-piece-right { animation-name: confetti-right-up; }
+    @keyframes confetti-left-up {
+      0%   { left: -5%; top: var(--y); transform: rotate(0deg) scale(1); opacity: 1; }
+      100% { left: 20%;  top: 30%; transform: rotate(var(--rot)) scale(0.8); opacity: 0; }
+    }
+    @keyframes confetti-right-up {
+      0%   { right: -5%; top: var(--y); transform: rotate(0deg) scale(1); opacity: 1; }
+      100% { right: 20%;  top: 30%; transform: rotate(var(--rot)) scale(0.8); opacity: 0; }
+    }
+    #confetti {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 2000;
+      overflow: hidden;
+    }
+    .confetti-piece {
+      position: absolute;
+      width: 16px;
+      height: auto;
+      image-rendering: crisp-edges;
+      animation-timing-function: ease-out;
+      animation-fill-mode: forwards;
+    }
+    .confetti-piece-left { animation-name: confetti-left; }
+    .confetti-piece-right { animation-name: confetti-right; }
+    @keyframes confetti-left {
+      0%   { left: -10%; top: var(--y); transform: rotate(0deg); opacity: 1; }
+      100% { left: 50%;  top: calc(var(--y) + var(--yDrift)); transform: rotate(var(--rot)); opacity: 0; }
+    }
+    @keyframes confetti-right {
+      0%   { right: -10%; top: var(--y); transform: rotate(0deg); opacity: 1; }
+      100% { right: 50%;  top: calc(var(--y) + var(--yDrift)); transform: rotate(var(--rot)); opacity: 0; }
+    }
     /* Start Screen */
     #start-screen {
       position: absolute;
@@ -227,6 +285,9 @@
 
     /* Mobile Responsive */
     @media (max-width: 600px) {
+      :root {
+        --header-h: 60px;
+      }
       #header {
         height: 60px;
         padding: 0 15px;
@@ -284,7 +345,9 @@
 
 <body>
   <div id="app-container">
+  <div id="app-container">
     <div id="top-bg"></div>
+    <div id="confetti"></div>
     <div id="start-screen">
       <img src="logo.png" class="logo-large" alt="Logo">
       <h1>Balloon Popper</h1>
