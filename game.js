@@ -27,6 +27,8 @@ AFRAME.registerComponent('collector-game', {
     this.waveTimer = 0;
     this.waveIntervalMs = 7000;
     this.waveSize = 12;
+    this.collisionThresh = 0.10;
+    this.collisionWorld = 0.08;
     this.mouth = document.querySelector('#mouth');
     this.hudScore = document.getElementById('score');
     var startBtn = document.getElementById('start');
@@ -183,6 +185,8 @@ AFRAME.registerComponent('collector-game', {
     var mouthPos = new THREE.Vector3();
     this.mouth.object3D.getWorldPosition(mouthPos);
     var mouthNDC = mouthPos.clone().project(cam);
+    var mouthTracked = !!(this.mouth && this.mouth.object3D && this.mouth.object3D.visible);
+    var mouthDist = mouthPos.clone().sub(cam.position).length();
     for (var i = 0; i < this.targets.length; i++) {
       var t = this.targets[i];
       if (!t) continue;
@@ -192,7 +196,11 @@ AFRAME.registerComponent('collector-game', {
       var dx = mouthNDC.x - targetNDC.x;
       var dy = mouthNDC.y - targetNDC.y;
       var dist2d = Math.sqrt(dx * dx + dy * dy);
-      if (dist2d < 0.12 && !this.collected[i]) {
+      var targetDist = tp.clone().sub(cam.position).length();
+      var mouthAtTargetDepth = this.worldFromNDC(mouthNDC.x, mouthNDC.y, targetDist);
+      var worldDist = mouthAtTargetDepth.distanceTo(tp);
+      var inViewport = Math.abs(targetNDC.x) <= 1 && Math.abs(targetNDC.y) <= 1;
+      if (mouthTracked && inViewport && this.entered[i] && dist2d < this.collisionThresh && worldDist < this.collisionWorld && !this.collected[i]) {
         this.collected[i] = true;
         t.setAttribute('material', 'opacity: 0.6');
         this.spawnPop(tp);
