@@ -286,9 +286,9 @@
       <a-camera active="false" position="0 0 0" look-controls="false"></a-camera>
       <a-entity light="type: ambient; intensity: 1"></a-entity>
       <a-entity light="type: directional; intensity: 0.6" position="1 1 1"></a-entity>
-      <a-entity id="nose" mindar-face-target="anchorIndex: 1">
-        <a-ring color="#ffcc00" radius-inner="0.03" radius-outer="0.06" position="0 0 0"
-          material="transparent: true; opacity: 1; depthTest: false; depthWrite: false"></a-ring>
+      <a-entity id="mouth" mindar-face-target="anchorIndex: 13" position="0 -0.03 0">
+        <a-image src="assets/icon-2.png" width="0.80" height="0.80" position="0 0 0"
+          material="shader: flat; transparent: true; alphaTest: 0.5; depthTest: false; depthWrite: false" sharp-texture></a-image>
       </a-entity>
       <a-entity id="game" collector-game></a-entity>
     </a-scene>

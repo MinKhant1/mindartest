@@ -1,8 +1,25 @@
+AFRAME.registerComponent('sharp-texture', {
+  init: function () {
+    this.el.addEventListener('materialtextureloaded', (e) => {
+      var tex = e.detail && e.detail.texture;
+      if (tex) {
+        var THREE = AFRAME.THREE;
+        tex.minFilter = THREE.LinearFilter;
+        tex.magFilter = THREE.NearestFilter;
+        tex.generateMipmaps = false;
+        tex.anisotropy = 1;
+        tex.needsUpdate = true;
+      }
+    });
+  }
+});
+
 AFRAME.registerComponent('collector-game', {
   init: function () {
     this.score = 0;
     this.targets = [];
     this.vels = [];
+    this.rotVels = [];
     this.pops = [];
     this.collected = [];
     this.entered = [];
@@ -10,7 +27,7 @@ AFRAME.registerComponent('collector-game', {
     this.waveTimer = 0;
     this.waveIntervalMs = 7000;
     this.waveSize = 12;
-    this.nose = document.querySelector('#nose');
+    this.mouth = document.querySelector('#mouth');
     this.hudScore = document.getElementById('score');
     var startBtn = document.getElementById('start');
     var startScreen = document.getElementById('start-screen');
@@ -46,6 +63,7 @@ AFRAME.registerComponent('collector-game', {
     }
     this.targets = [];
     this.vels = [];
+    this.rotVels = [];
     this.collected = [];
     this.entered = [];
     this.score = 0;
@@ -105,11 +123,12 @@ AFRAME.registerComponent('collector-game', {
     var cam = scene && scene.camera;
     if (!cam) return;
     for (var i = 0; i < n; i++) {
-      var e = document.createElement('a-sphere');
-      e.setAttribute('color', '#ff3b3b');
-      e.setAttribute('radius', '0.06');
+      var e = document.createElement('a-image');
+      e.setAttribute('src', 'assets/Ball.png');
+      e.setAttribute('width', '0.12');
+      e.setAttribute('height', '0.12');
       var side = Math.floor(this.rand(0, 4));
-      var distance = this.rand(0.7, 1.1);
+      var distance = Math.floor(this.rand(0.7, 1.1) * 1000) / 1000;
       var fr = this.getFrustumSize(distance);
       var x, y;
       if (side === 0) { // left
@@ -127,7 +146,8 @@ AFRAME.registerComponent('collector-game', {
       }
       var startWorld = this.worldFromCameraOffset(x, y, distance);
       e.object3D.position.copy(startWorld);
-      e.setAttribute('material', 'shader: standard; metalness: 0; roughness: 1; opacity: 1; transparent: false; depthTest: true; depthWrite: true; side: double');
+      e.setAttribute('material', 'shader: flat; transparent: true; opacity: 1; alphaTest: 0.5; depthTest: true; depthWrite: true; side: double');
+      e.setAttribute('sharp-texture', '');
       this.el.appendChild(e);
       this.targets.push(e);
       this.collected.push(false);
@@ -138,6 +158,7 @@ AFRAME.registerComponent('collector-game', {
       var dir = inWorld.clone().sub(startWorld).normalize();
       var speed = this.rand(0.12, 0.25);
       this.vels.push(dir.multiplyScalar(speed));
+      this.rotVels.push(this.rand(0.8, 2.0));
     }
   },
   spawnPop: function (pos) {
@@ -153,27 +174,27 @@ AFRAME.registerComponent('collector-game', {
   },
   tick: function (time, dt) {
     if (!this.playing) return;
-    if (!this.nose) return;
+    if (!this.mouth) return;
     var scene = this.el.sceneEl;
     var cam = scene && scene.camera;
     if (!cam) return;
     scene.object3D.updateMatrixWorld(true);
     cam.updateMatrixWorld(true);
-    var nosePos = new THREE.Vector3();
-    this.nose.object3D.getWorldPosition(nosePos);
-    var noseNDC = nosePos.clone().project(cam);
+    var mouthPos = new THREE.Vector3();
+    this.mouth.object3D.getWorldPosition(mouthPos);
+    var mouthNDC = mouthPos.clone().project(cam);
     for (var i = 0; i < this.targets.length; i++) {
       var t = this.targets[i];
       if (!t) continue;
       var tp = new THREE.Vector3();
       t.object3D.getWorldPosition(tp);
       var targetNDC = tp.clone().project(cam);
-      var dx = noseNDC.x - targetNDC.x;
-      var dy = noseNDC.y - targetNDC.y;
+      var dx = mouthNDC.x - targetNDC.x;
+      var dy = mouthNDC.y - targetNDC.y;
       var dist2d = Math.sqrt(dx * dx + dy * dy);
-      if (dist2d < 0.07 && !this.collected[i]) {
+      if (dist2d < 0.12 && !this.collected[i]) {
         this.collected[i] = true;
-        t.setAttribute('color', '#66ff66');
+        t.setAttribute('material', 'opacity: 0.6');
         this.spawnPop(tp);
         this.score += 1;
         this.hudScore.textContent = String(this.score);
@@ -190,6 +211,10 @@ AFRAME.registerComponent('collector-game', {
       var v = this.vels[i];
       if (v) {
         t.object3D.position.addScaledVector(v, dt / 1000);
+      }
+      var rv = this.rotVels[i];
+      if (rv) {
+        t.object3D.rotation.z += rv * (dt / 1000);
       }
       var tp2 = new THREE.Vector3();
       t.object3D.getWorldPosition(tp2);
