@@ -14,12 +14,26 @@ AFRAME.registerComponent('collector-game', {
     this.hudScore = document.getElementById('score');
     var startBtn = document.getElementById('start');
     var startScreen = document.getElementById('start-screen');
+    var sceneEl = this.el.sceneEl;
+    var arSystem = null;
+    sceneEl.addEventListener('loaded', () => {
+      arSystem = sceneEl.systems["mindar-face-system"];
+    });
+    sceneEl.addEventListener("arReady", () => {
+      console.log("MindAR ready");
+    });
+    sceneEl.addEventListener("arError", (e) => {
+      console.error("MindAR error", e && e.detail);
+    });
     startBtn.addEventListener('click', () => {
       if (startScreen) {
         startScreen.style.opacity = '0';
         setTimeout(() => { startScreen.style.display = 'none'; }, 500);
       } else {
         startBtn.style.display = 'none';
+      }
+      if (arSystem && typeof arSystem.start === 'function') {
+        arSystem.start();
       }
       this.reset();
       this.startGame();
